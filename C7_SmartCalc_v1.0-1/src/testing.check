@@ -1,0 +1,752 @@
+#include "calculate.h"
+
+#define eps2 0.1
+#define eps3 1e-3
+
+#test e1
+char *expression = "ln((sin(81^2)) ^2+(cos(3^8)) ^2)";
+double answer;
+double real_ans = 0.0;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e2
+char *expression = "cos(cos(cos(cos(1))))";
+double answer;
+double real_ans = 0.7934803;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e3
+char *expression = "sqrt(1.23)";
+double real_ans = 1.109053651;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e4
+char *expression = "sin(3.14159265359)";
+double real_ans = 0;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e5
+char *expression = "cos(sqrt(4.35))";
+double real_ans = -0.492420866636;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e6
+char *expression = "12 / sqrt(0.12) * 5.245 - (-8)";
+double real_ans = 189.692129714;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e7
+char *expression = "+0 - (+9) * (123)";
+double real_ans = -1107;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e8
+char *expression = "+0 - (+9) mod (123)";
+double real_ans = -9;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+#test e9
+char *expression = "log(3 + sqrt(123.023)) / (9 - 3 mod 1)";
+double real_ans = 0.127662165;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e10
+char *expression = "acos(cos(1.0))";
+double real_ans = 1;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e11
+char *expression = "atan(asin(0.123))";
+double real_ans = 0.122692891014;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e12
+char *expression = "3 * 123 mod 3 - 123 * 89 + (+8)";
+double real_ans = -10939;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e13
+char *expression = "3 ^ 1.23 - (7 ^ 0.13)";
+double real_ans = 2.574574376;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e14
+char *expression = "3 * 5 ^ 7.7";
+double real_ans = 723086.557875011;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e15
+char *expression = "3 ^ 2 ^ 2";
+double real_ans = 81;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e16
+char *expression = "124 /2 / (-8) *9 + 123 * 8 ^1";
+double real_ans = 914.25;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e17
+char *expression = "tan(sqrt(4) - 123 + 124 * (-1.000023)) - 9.9 + tan(3.14)";
+double real_ans = -9.860194048963;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e18
+char *expression = "1 + log(3) / 5.24";
+double real_ans = 1.091053675;
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test e19
+char *expression = "+3";
+double answer;
+solve_expression(expression, 0.0, &answer);
+ck_assert_int_eq(answer, 3);
+
+#test e20
+char *expression = "(-5)+3";
+double answer;
+solve_expression(expression, 0.0, &answer);
+ck_assert_int_eq(answer, -2);
+
+#test e21
+char *expression = "2-(-15)";
+double answer;
+solve_expression(expression, 0.0, &answer);
+ck_assert_int_eq(answer, 17);
+
+#test e22
+char *expression = "cos(sqrt(45*2))";
+double answer;
+double real_ans = -0.9980752;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer), 0);
+ck_assert_double_eq_tol(answer, real_ans, eps);
+
+#test n1
+char *expression = "3)+(-2";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n2
+char *expression = "/2";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n3
+char *expression = "sincos";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n4
+char *expression = "sin(4 +";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n5
+char *expression = "lmn(3)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n6
+char *expression = "3(log(3))";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n7
+char *expression = "sqrt(* 7)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n8
+char *expression = "-*tan(3)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n9
+char *expression = "9 --3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n10
+char *expression = "3 ++3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n11
+char *expression = "/";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n12
+char *expression = "0..";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n13
+char *expression = "cos(3))";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n14
+char *expression = "ln()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n15
+char *expression = "loglog3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n16
+char *expression = "+892+";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n17
+char *expression = "";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n18
+char *expression = "3+mod5";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n19
+char *expression = "(^9)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n20
+char *expression = "sqrt";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n21
+char *expression = "sqrt";
+Stack_t *stack = NULL;
+ck_assert_int_eq(pars(expression, &stack), 0);
+
+
+
+#test n22
+char *expression = "0^(-1.2)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+POW_ZERO_NEG_ERROR);
+
+#test n23
+char *expression = "123 / 2 * 9 / 0 - 123 - 0";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+DIVISION_ZERO_ERROR);
+
+#test n24
+char *expression = "sqrt(-0.000002)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NEG_ROOT_ERROR);
+
+#test n25
+char *expression = "sqrt(2 * (-89))";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NEG_ROOT_ERROR);
+
+#test n26
+char *expression = "tan(-3.1415926535 / 2)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+INF_TAN_ERROR);
+
+#test n27
+char *expression = "tan(101 * (-3.1415926535) / 2)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+INF_TAN_ERROR);
+
+#test n28
+char *expression = "tan(-3 * (+3.1415926535) / 2) - 100";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+INF_TAN_ERROR);
+
+#test n29
+char *expression = "log(-0.01230120)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NON_POS_LOG_ERROR);
+
+#test n30
+char *expression = "ln(-0.0)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NON_POS_LOG_ERROR);
+
+#test n31
+char *expression = "ln(-0.01230120)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NON_POS_LOG_ERROR);
+
+#test n32
+char *expression = "log(0.0)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+NON_POS_LOG_ERROR);
+
+#test n33
+char *expression = "acos(123)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+ARCCOS_RANGE_ERROR);
+
+#test n34
+char *expression = "asin(1.00001)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+ARCSIN_RANGE_ERROR);
+
+#test n35
+char *expression = "asin(-123)";
+double answer;
+solve_expression(expression, 0.0, &answer);
+ck_assert_double_nan(answer);
+
+#test n36
+char *expression = "acos(-1.00001)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+ARCCOS_RANGE_ERROR);
+
+#test n37
+char *expression = "+";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n38
+char *expression = "++3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n39
+char *expression = "2+";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n40
+char *expression = "-";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n41
+char *expression = "--3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n42
+char *expression = "2-";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n43
+char *expression = "*";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n44
+char *expression = "*3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n45
+char *expression = "2*";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n46
+char *expression = "/";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n47
+char *expression = "2/";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n48
+char *expression = "/3";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n49
+char *expression = "^";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n50
+char *expression = "2^";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n51
+char *expression = "^2";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n52
+char *expression = "^-";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n53
+char *expression = "-(^)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n54
+char *expression = "2)(";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n55
+char *expression = "mod";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n56
+char *expression = "2mod";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n57
+char *expression = "mod2";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n58
+char *expression = "cos";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n59
+char *expression = "cos(";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n60
+char *expression = "sin)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n61
+char *expression = "tan3)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n62
+char *expression = "log";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n63
+char *expression = "atan()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n64
+char *expression = "asin";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n65
+char *expression = "acos()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n66
+char *expression = "atan";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n67
+char *expression = "acos";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n68
+char *expression = "log()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n69
+char *expression = "3 + ln";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n70
+char *expression = "- sin";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n72
+char *expression = "4 mod (-0.0)";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+DIVISION_ZERO_ERROR);
+
+#test n71
+char *expression = "mod";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n73
+char *expression = "ln";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n74
+char *expression = "ln() - ()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n75
+char *expression = "tan()";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n76
+char *expression = "tan";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n77
+char *expression = "tan(x)";
+double answer;
+double x = 2;
+ck_assert_int_eq(solve_expression(expression, x, &answer),
+-0.416146);
+
+#test n78
+char *expression = " + ";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n79
+char *expression = "+";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n80
+char *expression = "3-";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+PARSING_ERROR);
+
+#test n81
+char *expression = "1123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+123456789+12345";
+double answer;
+ck_assert_int_eq(solve_expression(expression, 0.0, &answer),
+TOO_MUCH_ARGS_ERROR);
+
+#test pkn1
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = 3.34;
+char type = 'p';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn2
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = 3.34;
+char type = '1';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn3
+double total_loan_amount = 0.0;
+int month_term = 12;
+double interest_rate = 3.34;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn4
+double total_loan_amount = -123;
+int month_term = 12;
+double interest_rate = 3.34;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn5
+double total_loan_amount = 1000000.0;
+int month_term = 0;
+double interest_rate = 3.34;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn6
+double total_loan_amount = 1000000.0;
+int month_term = -123;
+double interest_rate = 3.34;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn7
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = 0.0;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn8
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = -1.0;
+char type = 'a';
+double payment_month[10000];
+double overpayment;
+double total_payment;
+ck_assert_int_eq(calc_credit(total_loan_amount, month_term, interest_rate, type,
+payment_month, &overpayment, &total_payment), CREDIT_INPUT_ERROR);
+
+#test pkn9
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = 10;
+double payment_month[12];
+double overpayment;
+double total_payment;
+calc_credit(total_loan_amount, month_term, interest_rate, 0, payment_month, &overpayment, &total_payment);
+ck_assert_double_eq_tol(overpayment, 54990.65, eps2);
+ck_assert_double_eq_tol(total_payment, 1054990.65, eps2);
+
+#test pkn10
+double total_loan_amount = 1000000.0;
+int month_term = 12;
+double interest_rate = 10;
+double payment_month[12];
+double overpayment;
+double total_payment;
+calc_credit(total_loan_amount, month_term, interest_rate, 1, payment_month, &overpayment, &total_payment);
+ck_assert_double_eq_tol(overpayment, 54166.67 , eps2);
+ck_assert_double_eq_tol(total_payment, 1054166.67, eps2);
